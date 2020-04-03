@@ -4,7 +4,6 @@ import com.fxg.demo.validation.annotation.ConditionNotNull;
 import com.fxg.demo.validation.annotation.New;
 import com.fxg.demo.validation.annotation.Update;
 import lombok.Data;
-import org.hibernate.validator.constraints.CreditCardNumber;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -19,7 +18,6 @@ public class Customer {
 	@NotEmpty(message = "nickname 不能为空", groups = {New.class})
 	private String nickname;
 
-	@CreditCardNumber
 	private String name;
 
 	private Integer age;

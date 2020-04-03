@@ -3,6 +3,7 @@ package com.fxg.demo.validation.controller;
 import com.fxg.demo.validation.annotation.New;
 import com.fxg.demo.validation.domain.Customer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,7 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/add", consumes = "application/json;charset=UTF-8")
-	public String addCustomer(@Validated(New.class) Customer customer){
+	public String addCustomer(@Validated(New.class) Customer customer,BindingResult bindingResult){
 		log.info("customer is:{}",customer);
 		return "success";
 	}
