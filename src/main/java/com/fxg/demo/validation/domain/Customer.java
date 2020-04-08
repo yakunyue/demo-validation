@@ -5,6 +5,7 @@ import com.fxg.demo.validation.annotation.New;
 import com.fxg.demo.validation.annotation.Update;
 import lombok.Data;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -17,6 +18,9 @@ public class Customer {
 
 	@NotEmpty(message = "nickname 不能为空", groups = {New.class})
 	private String nickname;
+
+	@Valid
+	private Address address;
 
 	private String name;
 
