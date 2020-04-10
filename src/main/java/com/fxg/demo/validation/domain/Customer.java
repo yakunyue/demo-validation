@@ -1,16 +1,20 @@
 package com.fxg.demo.validation.domain;
 
 import com.fxg.demo.validation.annotation.ConditionNotNull;
-import com.fxg.demo.validation.annotation.New;
-import com.fxg.demo.validation.annotation.Update;
+import com.fxg.demo.validation.annotation.group.Custom;
+import com.fxg.demo.validation.annotation.group.New;
+import com.fxg.demo.validation.annotation.group.Update;
 import lombok.Data;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
 @Data
+@ConditionNotNull(targetFileName = "birthDay",dependFileNames = {"age"},groups = {Custom.class})
 public class Customer {
 
 	@NotNull(message = "id 不能为空", groups = {Update.class})
@@ -19,13 +23,16 @@ public class Customer {
 	@NotEmpty(message = "nickname 不能为空", groups = {New.class})
 	private String nickname;
 
-	@Valid
-	private Address address;
+	@Pattern(regexp = "^([1][3,4,5,6,7,8,9])\\d{9}$")
+	private String telephoneNo;
 
+	@NotBlank
 	private String name;
 
 	private Integer age;
 
-	@ConditionNotNull(targetFileName = "birthDay",dependFileNames = {"age"})
 	private LocalDate birthDay;
+
+	@Valid
+	private Address address;
 }

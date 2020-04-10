@@ -26,12 +26,16 @@ public class ConditionNotNullValidator implements ConstraintValidator<ConditionN
 		int notNullCount = 0;
 		Object targetFile = null;
 		try {
-			for (String dependFileName : dependFileNames) {
-				PropertyUtils.getProperty(o, dependFileName);
-			}
 			targetFile = PropertyUtils.getProperty(o, this.targetFileName);
+			for (String dependFileName : dependFileNames) {
+				Object dependFile = PropertyUtils.getProperty(o, dependFileName);
+				if (Objects.isNull(dependFile)){
+					nullCount++;
+				}else {
+					notNullCount++;
+				}
+			}
 		} catch (Exception e) {
-
 			e.printStackTrace();
 		}
 		switch (this.conditionLevel) {
