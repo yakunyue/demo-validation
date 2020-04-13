@@ -1,12 +1,10 @@
 package com.fxg.demo.validation.annotation;
 
 
-import com.fxg.demo.validation.annotation.enums.ConditionLevel;
 import com.fxg.demo.validation.validator.ConditionNotNullValidator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -23,4 +21,6 @@ public @interface ConditionNotNull {
 	String targetFileName();
 	String[] dependFileNames() default {};
 	ConditionLevel conditionLevel() default ConditionLevel.ANY;
+
+	enum ConditionLevel{ANY,ALL}
 }

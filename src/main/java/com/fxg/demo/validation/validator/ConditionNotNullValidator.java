@@ -1,23 +1,25 @@
 package com.fxg.demo.validation.validator;
 
 import com.fxg.demo.validation.annotation.ConditionNotNull;
-import com.fxg.demo.validation.annotation.enums.ConditionLevel;
 import org.apache.commons.beanutils.PropertyUtils;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.util.Objects;
 
+/**
+ * @ConditionNotNull 注解对应的校验器
+ */
 public class ConditionNotNullValidator implements ConstraintValidator<ConditionNotNull, Object> {
 
 	private String targetFileName;
 	private String dependFileNames[];
-	ConditionLevel conditionLevel;
+	private ConditionNotNull.ConditionLevel conditionLevel;
 
 	@Override
-	public void initialize(ConditionNotNull annotition) {
-		this.targetFileName = annotition.targetFileName();
-		this.dependFileNames = annotition.dependFileNames();
-		this.conditionLevel = annotition.conditionLevel();
+	public void initialize(ConditionNotNull annotation) {
+		this.targetFileName = annotation.targetFileName();
+		this.dependFileNames = annotation.dependFileNames();
+		this.conditionLevel = annotation.conditionLevel();
 	}
 
 	@Override
