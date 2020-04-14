@@ -3,6 +3,7 @@ package com.fxg.demo.validation.domain;
 import com.fxg.demo.validation.annotation.CheckCase;
 import com.fxg.demo.validation.annotation.ConditionNotNull;
 import com.fxg.demo.validation.annotation.group.Custom;
+import com.fxg.demo.validation.annotation.group.KeyId;
 import com.fxg.demo.validation.annotation.group.New;
 import com.fxg.demo.validation.annotation.group.Update;
 import lombok.Data;
@@ -10,7 +11,6 @@ import lombok.Data;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
 @ConditionNotNull(targetFileName = "birthDay",dependFileNames = {"age"},groups = {Custom.class})
 public class Customer {
 
-	@NotNull(message = "id 不能为空", groups = {Update.class})
+	@KeyId(groups = {Update.class})
 	private Integer id;
 
 	@CheckCase(mode = CheckCase.CaseMode.UPPER,groups = {Custom.class})

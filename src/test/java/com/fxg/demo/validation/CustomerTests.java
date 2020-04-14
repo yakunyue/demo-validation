@@ -2,6 +2,8 @@ package com.fxg.demo.validation;
 
 import com.fxg.demo.validation.annotation.group.Custom;
 import com.fxg.demo.validation.annotation.group.New;
+import com.fxg.demo.validation.annotation.group.NewAndUpdate;
+import com.fxg.demo.validation.annotation.group.Update;
 import com.fxg.demo.validation.domain.Address;
 import com.fxg.demo.validation.domain.Customer;
 import org.junit.jupiter.api.Test;
@@ -37,18 +39,29 @@ class CustomerTests {
 	}
 
 	/**
-	 * 测试group作用
+	 * 测试group作用1--实现部分校验（分组校验）
 	 */
 	@Test
-	public void testValidationGroup() {
+	public void testValidationGroup1() {
 		Customer customer = new Customer();
 		Set<ConstraintViolation<Customer>> result = validator.validate(customer, New.class);
-		System.out.println("****************测试group作用****************");
+		System.out.println("****************测试group作用1--实现部分校验（分组校验）****************");
 		this.printError(result);
 	}
 
 	/**
-	 * 测试级联校验1
+	 * 测试group作用2--控制校验顺序
+	 */
+	@Test
+	public void testValidationGroup2() {
+		Customer customer = new Customer();
+		Set<ConstraintViolation<Customer>> result = validator.validate(customer, NewAndUpdate.class);
+		System.out.println("****************测试group作用2--控制校验顺序****************");
+		this.printError(result);
+	}
+
+	/**
+	 * 测试级联校验1-对象
 	 */
 	@Test
 	public void testCascadeValidation1() {
@@ -56,12 +69,12 @@ class CustomerTests {
 		customer.setNickname("xiaohuihui");
 		customer.setAddress(new Address());
 		Set<ConstraintViolation<Customer>> result = validator.validate(customer, New.class);
-		System.out.println("****************测试级联校验1****************");
+		System.out.println("****************测试级联校验1-对象****************");
 		this.printError(result);
 	}
 
 	/**
-	 * 测试级联校验2
+	 * 测试级联校验2-List
 	 */
 	@Test
 	public void testCascadeValidation2() {
@@ -71,9 +84,22 @@ class CustomerTests {
 		customer.setMemberNo("AAA");
 		customer.setHistoryAddressList(addressList);
 		Set<ConstraintViolation<Customer>> result = validator.validate(customer, Custom.class);
-		System.out.println("****************测试级联校验2****************");
+		System.out.println("****************测试级联校验2-List****************");
 		this.printError(result);
 	}
+
+	/**
+	 * 测试约束条件组合
+	 */
+	@Test
+	public void testUnionValidation() {
+		Customer customer = new Customer();
+		customer.setId(0);
+		Set<ConstraintViolation<Customer>> result = validator.validate(customer, Update.class);
+		System.out.println("****************测试约束条件组合****************");
+		this.printError(result);
+	}
+
 	/**
 	 * 测试自定义注解@CheckCase
 	 */

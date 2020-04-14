@@ -1,5 +1,6 @@
 package com.fxg.demo.validation.controller;
 
+import com.fxg.demo.validation.annotation.group.New;
 import com.fxg.demo.validation.domain.Address;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
@@ -32,7 +33,7 @@ public class AddressController {
 
 	//request body 校验，错误信息封装入bindingResult
 	@PostMapping(value = "/test/body", consumes = "application/json;charset=UTF-8")
-	public String testBody(@RequestBody @Validated Address address, BindingResult bindingResult) {
+	public String testBody(@RequestBody @Validated(New.class) Address address, BindingResult bindingResult) {
 		log.info("address is:{}", address);
 		int errorCount = bindingResult.getErrorCount();
 		log.info("errorCount is:{}", errorCount);
