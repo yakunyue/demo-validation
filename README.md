@@ -2,14 +2,18 @@
 A Applacation for Test Spring-Validation
 
 
-## 前言
-
-JSR 303 是专门针对 Bean Validation 制定的 Java 规范，Hibernate Validator 又对JSR 303 进行了扩展，合理运用这两个框架提供的校验功能可以为项目省去很多重复的校验代码。Spring 已经为数据校验提供了很好的支持，基于 spring 和 JSR 303 规范中的一些注解，再加上一些自定义内容，能极大简化项目中参数校验代码。
+JSR 303 是专门针对 Bean Validation 制定的 Java 规范。Hibernate Validator 又对JSR 303 进行了扩展，合理运用这两个框架提供的校验功能可以为项目省去很多重复的校验代码。Spring 已经为数据校验提供了很好的支持，基于 spring 和 JSR 303 规范中的一些注解，再加上一些自定义内容，能极大简化项目中参数校验代码。
 
 [JSR 303 文档下载地址](https://jcp.org/aboutJava/communityprocess/final/jsr303/index.html)
-[Hibernate Validator 文档地址](https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/)
+
+[Hivernate Validator 文档地址](https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/)
 
 JSR 303 的文档太硬核了，我英文一般，读起来太生涩了。相比较而言 Hivernate Validator 的文档要容易理解很多。本文只讨论 Bean Validation 的常用姿势，足够解决项目中90%的校验需求，如需彻底了解  Bean Validation ，还需认真阅读上面的两个文档。
+
+## 目录
+
+* TOC
+{:toc}
 
 ## Bean Validation
 
@@ -19,13 +23,18 @@ JSR 303 的文档太硬核了，我英文一般，读起来太生涩了。相比
 
 ### 校验注解（Constraint annotation）
 
-> 如果注解的保持策略包含 RUNTIME，并且注释本身是用 javax.validation.Constraint 注释，则该注释被认为是约束注解。-- JSR 303 文档
+> 如果注解的保持策略包含 RUNTIME，并且注释本身是用 javax.validation.Constraint 注释的，则该注释被认为是约束注解。-- JSR 303 文档
+
+#### 官方的约束注解
+
+Java 的约束注解都在 javax.validation.constraints 包，Hibernater 的约束注解在 org.hibernate.validator.constraints 包。官方包里的约束注解比较多，不一一列举了，这些约束注解基本上能满足项目中 90% 以上的校验需求。Spring 默认引入了这两个包，所以我们在使用的时候基本不用再手动引入。
 
 #### 约束注解的默认字段
+
 约束注解有三个保留名称字段，这三个字段有特殊意义，每个约束注解都必须有
 
 * message
-    * 每一个约束注解都必须有一个 String 类型的 message 字段。
+    * 每一个约束注解都必须有一个 String 类型的 message 字段
     * 这个属性的值是用来构建校验失败时的报错信息的
     * 值可以直接是错误信息本身，也可以是一个占位符，真正的错误信息放在 ValidationMessages.properties 文件中
 
@@ -35,7 +44,7 @@ JSR 303 的文档太硬核了，我英文一般，读起来太生涩了。相比
     * 作用是控制校验顺序或者执行部分校验
 
 * payload
-    * 每一个约束注解都必须有一个 Payload 数组类型的 payload 字段
+    *  每一个约束注解都必须有一个 Payload 数组类型的 payload 字段
     * payload 字段的默认值必须是空数组
     * 通常用它控制校验失败时的日志等级
 
@@ -97,6 +106,24 @@ public @interface KeyId {
 ```
 *关于约束条件组合的简单测试在 [demo-validation](https://github.com/yueyakun2017/demo-validation) 项目的 TestCustomer 类中*
 
+#### 自定义约束注解
+
+示例项目 demo-validation 中的 @CheckCase 就是一个简单的自定义注解。它的作用是校验目标字符串都为 
+大写或者小写（通过 mode 属性指定）。
+
+ @CheckCase 的校验器是 CheckCaseValidator 类。校验的判断逻辑都在这个类里。
+ 
+ ### 约束校验器（Constraint validator）
+ 
+ 还是以前面自定义的@CheckCase 和 CheckCaseValidator 类为例。这里说一下约束校验器，约束校验器主要提供判断被校验对象是否满足约束条件的代码逻辑。校验器必须实现 ConstraintValidator 接口。
+ 它有两个泛型参数：
+* 第一个是这个校验器所服务的约束注解类型（在我们的例子中即CheckCase）
+* 第二个这个校验器所支持到被校验元素到类型（即String）。
+ 
+ CheckCaseValidator 类有两个方法：
+* 方法 initialize 默认是一个空方法，入参是约束注解实例，子类通过重新这个方法可以完成一项校验的初始化工作。例子中在这一步做了初始化 caseMode 字段的工作。
+ * 方法 isValid 返回一个 boolean 值，校验通过返回 true 校验失败返回 false。入参是目标字段的 value 和 ConstraintValidatorContext ，value 用于检验逻辑，通过 ConstraintValidatorContext 参数可以实现对报错信息的动态修改。
+
 ## Spring 对 Bean Validation 的支持
 
 如果每当校验约束的时候都要创建一个 Validator，然后调用 Validator 的 validate 方法，之后再出来返回的校验结果也挺烦的。还好 Spring 为 Bean Validation 提供了很好的支持。
@@ -127,3 +154,5 @@ Spring 的参数校验功能有两部分组成：
 * 由于基于AOP实现，所以类内部调用是不会触发validation的
 
 *这部分的测试代码主要在[demo-validation](https://github.com/yueyakun2017/demo-validation)项目的 TestAOPValidationController 和 AddressService 类中*
+
+
