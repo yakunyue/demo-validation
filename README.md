@@ -2,13 +2,16 @@
 A Applacation for Test Spring-Validation
 
 
-JSR 303 是专门针对 Bean Validation 制定的 Java 规范。Hibernate Validator 又对JSR 303 进行了扩展，合理运用这两个框架提供的校验功能可以为项目省去很多重复的校验代码。Spring 已经为数据校验提供了很好的支持，基于 spring 和 JSR 303 规范中的一些注解，再加上一些自定义内容，能极大简化项目中参数校验代码。
+从 JSR 303 开始，Bean Validation 已经成为 JAVA 的标准规范之一。到目前为止，Bean Validation 已经经过三个版本的迭代--JSR 303(1.0)、JSR 349(1.1)、JSR 380(2.0)。
+Hibernate Validator 又对JSR 303 进行了扩展，合理运用这两个框架提供的校验功能可以为项目省去很多重复的校验代码。
+Spring 已经为数据校验提供了很好的支持，基于 Spring 和 Bean Validation 规范中的一些注解，再加上一些自定义内容，能极大简化项目中参数校验代码。
 
-[JSR 303 文档下载地址](https://jcp.org/aboutJava/communityprocess/final/jsr303/index.html)
+[Bean Validation 官网地址](https://beanvalidation.org)
 
 [Hivernate Validator 文档地址](https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/)
 
-JSR 303 的文档太硬核了，我英文一般，读起来太生涩了。相比较而言 Hivernate Validator 的文档要容易理解很多。本文只讨论 Bean Validation 的常用姿势，足够解决项目中90%的校验需求，如需彻底了解  Bean Validation ，还需认真阅读上面的两个文档。
+本文只讨论 Bean Validation 的常用姿势，足够解决项目中90%的校验需求，如需彻底了解 Bean Validation，还需认真阅读上面的两个文档。
+*本文所有的测试代码已上传gitHub，项目地址：[demo-validation](https://github.com/yueyakun2017/demo-validation)*
 
 ## 目录
 
@@ -19,15 +22,14 @@ JSR 303 的文档太硬核了，我英文一般，读起来太生涩了。相比
 
 实现校验最主要的两个组件是约束注解（Constraint annotation）和约束校验器（Constraint validator）。校验注解加在需要校验的参数或者其内部属性上，校验器负责判断该参数或其内部属性是否符合检验规则。
 
-*本文所有的测试代码已上传gitHub，项目地址：[demo-validation](https://github.com/yueyakun2017/demo-validation)*
-
-### 校验注解（Constraint annotation）
+### 约束注解（Constraint annotation）
 
 > 如果注解的保持策略包含 RUNTIME，并且注释本身是用 javax.validation.Constraint 注释的，则该注释被认为是约束注解。-- JSR 303 文档
 
-#### 官方的约束注解
+#### 官方内置的约束注解
 
-Java 的约束注解都在 javax.validation.constraints 包，Hibernater 的约束注解在 org.hibernate.validator.constraints 包。官方包里的约束注解比较多，不一一列举了，这些约束注解基本上能满足项目中 90% 以上的校验需求。Spring 默认引入了这两个包，所以我们在使用的时候基本不用再手动引入。
+[官方内置注解文档地址](https://beanvalidation.org/2.0/spec/#builtinconstraints)
+内置的约束注解都在 javax.validation.constraints 包，Hibernater 的约束注解在 org.hibernate.validator.constraints 包。官方包里的约束注解比较多，不一一列举了，这些约束注解基本上能满足项目中 80% 以上的校验需求。Spring 默认引入了这两个包，所以我们在使用的时候基本不用再手动引入。
 
 #### 约束注解的默认字段
 
@@ -106,14 +108,34 @@ public @interface KeyId {
 ```
 *关于约束条件组合的简单测试在 [demo-validation](https://github.com/yueyakun2017/demo-validation) 项目的 TestCustomer 类中*
 
+#### 可重复约束注解
+
+Bean Validation 2.0 的一个新特性就是所有的内置注解都修改为了可重复注解，可重复注解的使用比较简单，举例如下。 
+
+```java
+public class Customer{
+	private Integer id;
+	
+	@Size.List({
+    		@Size(min=8,max=20,message = "普通用户昵称长度最少为8，最多为20"),
+    		@Size(min=4,max=30,groups = {VIP.class},message = "VIP用户昵称长度最少为4，最多为30")})
+    private String nickname;
+}
+```
+
 #### 自定义约束注解
 
 示例项目 demo-validation 中的 @CheckCase 就是一个简单的自定义注解。它的作用是校验目标字符串都为 
 大写或者小写（通过 mode 属性指定）。
+@CheckCase 的校验器是 CheckCaseValidator 类。校验的判断逻辑都在这个类里。
 
- @CheckCase 的校验器是 CheckCaseValidator 类。校验的判断逻辑都在这个类里。
+#### 错误消息提示
+
+错误消息提示信息可以在使用约束注解是通过 message 属性指定，也可以使用表达式配合在 resources 目录下的 ValidationMessages.properties 文件来指定。
+
+通过配置文件指定的时候支持通配符匹配，框架会自动匹配约束注解中属性名字相同的通配符。如果是其他特殊名称的通配符，也可以在验证器的 isValid 方法中通过向 ConstraintValidatorContext 上下文中增加参数，从而实信息填充。如 @CheckCase 的检验提示信息就采用了通配符的方式。
  
- ### 约束校验器（Constraint validator）
+### 约束校验器（Constraint validator）
  
  还是以前面自定义的@CheckCase 和 CheckCaseValidator 类为例。这里说一下约束校验器，约束校验器主要提供判断被校验对象是否满足约束条件的代码逻辑。校验器必须实现 ConstraintValidator 接口。
  它有两个泛型参数：
@@ -122,7 +144,7 @@ public @interface KeyId {
  
  CheckCaseValidator 类有两个方法：
 * 方法 initialize 默认是一个空方法，入参是约束注解实例，子类通过重新这个方法可以完成一项校验的初始化工作。例子中在这一步做了初始化 caseMode 字段的工作。
- * 方法 isValid 返回一个 boolean 值，校验通过返回 true 校验失败返回 false。入参是目标字段的 value 和 ConstraintValidatorContext ，value 用于检验逻辑，通过 ConstraintValidatorContext 参数可以实现对报错信息的动态修改。
+* 方法 isValid 返回一个 boolean 值，校验通过返回 true 校验失败返回 false。入参是目标字段的 value 和 ConstraintValidatorContext ，value 用于检验逻辑，通过 ConstraintValidatorContext 参数可以实现对报错信息的动态修改。
 
 ## Spring 对 Bean Validation 的支持
 
@@ -155,4 +177,16 @@ Spring 的参数校验功能有两部分组成：
 
 *这部分的测试代码主要在[demo-validation](https://github.com/yueyakun2017/demo-validation)项目的 TestAOPValidationController 和 AddressService 类中*
 
+
+## Bean Validation 2.0 的新特性
+
+1. 对 Java 的最低版本要求是 Java 8
+
+2. 支持容器的校验，通过TYPE_USE类型的注解实现对容器内容的约束：List<@Email String>
+
+3. 支持日期时间类型校验，@Past 和 @Future
+
+4. 新增内置约束注解，@Email, @NotEmpty, @NotBlank, @Positive, @PositiveOrZero, @Negative, @NegativeOrZero, @PastOrPresent and @FutureOrPresent
+
+5. 所有内置注解都是可重复注解
 
